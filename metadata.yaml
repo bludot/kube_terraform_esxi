@@ -1,0 +1,13 @@
+network:
+  version: 1
+  config:
+    - type: physical
+      name: ens32
+      subnets:
+        - type: static
+          address: ${static_ip}
+          gateway: ${gateway_ip}
+    - type: nameserver
+      address:
+        - 8.8.8.8
+        - 1.1.1.1

@@ -1,0 +1,37 @@
+#cloud-config
+repo_update: true
+repo_upgrade: all
+
+write_files:
+- encoding: b64
+  content: ${ssh_key_priv}
+  owner: ${username}:${username}
+  path: /home/${username}/.ssh/github
+  permissions: '0600'
+- content: |
+   ${ssh_key_pub}
+  owner: ${username}:${username}
+  path: /home/${username}/.ssh/github.pub
+  permissions: '0644'
+
+system_info:
+  default_user:
+    name: ${username}
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+    - ${ssh_key_pub}
+
+runcmd:
+  - sysctl -w net.ipv4.ip_forward=1
+  - sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
+  - sysctl -p /etc/sysctl.conf
+  - swapoff -a
+  - sed -i '2s/^/#/' /etc/fstab
+  - newhostn="${hostname}"
+  - hostn=$(cat /etc/hostname)
+  - echo "Exisitng hostname is $hostn"
+  - echo "New hostname will be $newhostn"
+  - sed -i "s/$hostn/$newhostn/g" /etc/hosts
+  - sed -i "s/$hostn/$newhostn/g" /etc/hostname
+power_state:
+  mode: reboot
